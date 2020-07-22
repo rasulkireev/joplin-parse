@@ -83,6 +83,7 @@ async def main(options):
             file_path = os.path.join(folder_path, re.sub(r'[^\w]', '-', note_title))
             with open(f'{file_path}.md','wb') as note:
                 s = f"""
+---                
 title: {note_title}
 category: {folder_title}
 id: {note_id}
