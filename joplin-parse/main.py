@@ -69,7 +69,8 @@ async def main(options):
             os.makedirs(folder_path)
 
     for folder in resource_folders:
-        folder_path = os.path.join(output_dir, folder["title"])
+        folder_title = folder["title"]
+        folder_path = os.path.join(output_dir, folder_title)
         notes_list = list(filter(lambda notes: notes['parent_id'] == folder["id"], notes_json))
 
         for note in notes_list:
@@ -83,6 +84,7 @@ async def main(options):
             with open(f'{file_path}.md','wb') as note:
                 s = f"""
 title: {note_title}
+category: {folder_title}
 id: {note_id}
 parent_id: {note_parent_id}
 created_at: {note_created_at}
