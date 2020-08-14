@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "joplinapp-parse"
+name = "joplin-parse"
 version = "0.1.0"
-description = "Turn my Joplin database into public wiki"
+description = "Turn Joplin database into public wiki"
 authors = ["Rasul Kireev <me@rasulkireev.com>"]
 
 [tool.poetry.dependencies]
