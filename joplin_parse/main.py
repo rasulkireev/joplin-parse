@@ -39,7 +39,7 @@ async def main(options):
     folder_index = find_position_in_list(parent_folder_names, folder_to_parse)
     child_folders = folders_json[folder_index]["children"]
 
-    output_dir = os.path.join(current_dir, 'output', folder_to_parse)
+    output_dir = os.path.join(current_dir, 'output')
 
     for i in range(len(child_folders)):
         folder = child_folders[i]
