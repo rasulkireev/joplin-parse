@@ -16,7 +16,8 @@ from joplin_parse.utils import (
     has_children,
     get_folder_title,
     download_resource,
-    choose_folders_to_parse
+    choose_folders_to_parse,
+    generate_note
 )
 
 TOKEN ="dd17a885a394a1c18f66a23a5578cde0200f4177bca0eb7ad8cb1b60a25b402e48942740e59a8522222b918c8d202e9e871e22992d18ad3df8ec6ad6d13e8c7c"
@@ -64,23 +65,13 @@ async def main(options):
     for note in all_notes:
         file_path = os.path.join("notes", remove_spaces(note['title']))
         try:
-            note_body = search_and_replace_joplin_note_links(note['body'], notes_dict)
+            note['body'] = search_and_replace_joplin_note_links(note['body'], notes_dict)
         except KeyError:
-            note_body = search_and_replace_joplin_resource_links(note['body'], resrouces_types_dict, resource_folder)
+            note['body'] = search_and_replace_joplin_resource_links(note['body'], resrouces_types_dict, resource_folder)
 
         if note['parent_id'] in folders_dict:
-            with open(f'{file_path}.md','wb') as md_note:
-                s = f"""---
-title: `{note['title']}`
-category: {get_folder_title(note, folders_dict)}
-id: {note['id']}
-parent_id: {note['parent_id']}
-created_at: {note['created_time']}
----
-
-{note_body}
-                """
-                md_note.write(s.encode("utf-8"))
+            note['category'] = get_folder_title(note, folders_dict)
+            generate_note(file_path, note)
         else:
             continue
 

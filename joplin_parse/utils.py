@@ -182,3 +182,18 @@ def choose_folders_to_parse(folders):
     child_folders = folders[folder_index]["children"]
 
     return child_folders
+
+def generate_note(file_path, note):
+    with open(f'{file_path}.md','wb') as md_note:
+        s = f"""---
+title: "{note['title'].replace('"',"'")}"
+category: {note['category']}
+id: {note['id']}
+parent_id: {note['parent_id']}
+created_at: {note['created_time']}
+---
+
+{note['body']}
+    """
+        md_note.write(s.encode("utf-8"))
+
