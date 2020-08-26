@@ -81,7 +81,7 @@ def search_and_replace_joplin_note_links(text: str, notes_dict: dict) -> str:
 
     Example:
         from: "(:/f9cb6c07fc8d48c2929eef772911bd1f)"
-        to: (./valid-link.md)
+        to: (./valid-link)
 
     Args:
         text (str): Text you want to go through
@@ -97,7 +97,7 @@ def search_and_replace_joplin_note_links(text: str, notes_dict: dict) -> str:
         note_title_replaced = notes_dict[note_id_to_replace]
         new_link = remove_spaces(note_title_replaced)
         
-        text = text.replace(link_to_replace, f"(./{new_link}.md)")
+        text = text.replace(link_to_replace, f"(./{new_link})")
     
     return text    
 
