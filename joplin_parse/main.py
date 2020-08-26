@@ -4,7 +4,19 @@ import json
 import asyncio
 import argparse
 from joplin_api import JoplinApi
-from joplin_parse.utils import get_notes, get_folders, get_folder_names, find_position_in_list
+from joplin_parse.utils import (
+    get_folder_names, 
+    find_position_in_list, 
+    remove_spaces,
+    generate_dict_with_folder_and_ids,
+    generate_dict_with_all_notes_and_ids,
+    generate_dict_with_all_resources,
+    search_and_replace_joplin_note_links,
+    search_and_replace_joplin_resource_links,
+    has_children,
+    get_folder_title,
+    download_resource
+)
 
 TOKEN ="dd17a885a394a1c18f66a23a5578cde0200f4177bca0eb7ad8cb1b60a25b402e48942740e59a8522222b918c8d202e9e871e22992d18ad3df8ec6ad6d13e8c7c"
 current_dir = os.getcwd()
@@ -25,48 +37,40 @@ def parse_options():
 async def main(options):
     joplin = JoplinApi(token=options.joplin_token)
 
-    all_notes = await get_notes(joplin)
-    all_folders = await get_folders(joplin)
+    all_notes = (await joplin.get_notes()).json()    
+    all_folders = (await joplin.get_folders()).json()
+    all_resources = (await joplin.get_resources()).json()
+    resource_folder = 'resources'
 
-    folders_json = all_folders.json()
-    notes_json = all_notes.json()
+    notes_dict = generate_dict_with_all_notes_and_ids(all_notes)
+    folders_dict = generate_dict_with_folder_and_ids(all_folders)
+    resrouces_types_dict = generate_dict_with_all_resources(all_resources)
 
-    parent_folder_names = get_folder_names(folders_json)
-    print(parent_folder_names)
-    print("Please choose the folder to parse:")
-    folder_to_parse = input()
+    for resource in all_resources:
+        response = await download_resource(joplin, resource, resource_folder)
 
-    folder_index = find_position_in_list(parent_folder_names, folder_to_parse)
-    child_folders = folders_json[folder_index]["children"]
+    if not os.path.exists('notes'):
+        os.makedirs('notes')
 
-    output_dir = os.path.join(current_dir, 'output')
+    for note in all_notes:
+        file_path = os.path.join("notes", remove_spaces(note['title']))
+        try:
+            note_body = search_and_replace_joplin_note_links(note['body'], notes_dict)
+        except KeyError:
+            note_body = search_and_replace_joplin_resource_links(note['body'], resrouces_types_dict, resource_folder)
 
-    for i in range(len(child_folders)):
-        folder = child_folders[i]
-        folder_title = folder["title"]
-        folder_id = folder["id"]
-
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-
-    for folder in child_folders:
-        folder_title = folder["title"]
-        notes_list = list(filter(lambda notes: notes['parent_id'] == folder["id"], notes_json))
-
-        for note in notes_list:
-            file_path = os.path.join(output_dir, re.sub(r'[^\w]', '-', note['title']))
-            with open(f'{file_path}.md','wb') as md_note:
-                s = f"""---
+        with open(f'{file_path}.md','wb') as md_note:
+            s = f"""---
 title: `{note['title']}`
-category: {folder_title}
+category: {get_folder_title(note, folders_dict)}
 id: {note['id']}
 parent_id: {note['parent_id']}
 created_at: {note['created_time']}
 ---
 
-{note['body']}
+{note_body}
                 """
-                md_note.write(s.encode("utf-8"))
+            md_note.write(s.encode("utf-8"))
 
 if __name__ == "__main__":
     cli_options = parse_options()
