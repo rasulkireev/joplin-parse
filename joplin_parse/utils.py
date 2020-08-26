@@ -6,7 +6,11 @@ from joplin_api import JoplinApi
 
 async def download_resource(joplin, resource, resource_location):
         downloaded_resource = await joplin.download_resources(resource['id'])
-        save_path = os.path.join(resource_location, f"{resource['id']}.{resource['file_extension']}")
+        
+        if resource['file_extension'] == "":
+            save_path = os.path.join(resource_location, f"{resource['filename']}")
+        else:
+            save_path = os.path.join(resource_location, f"{resource['id']}.{resource['file_extension']}")
 
         if not os.path.exists(resource_location):
             os.makedirs(resource_location)
@@ -97,7 +101,7 @@ def search_and_replace_joplin_note_links(text: str, notes_dict: dict) -> str:
     
     return text    
 
-def search_and_replace_joplin_resource_links(text: str, resources_types_dict: dict, resource_location: str) -> str:
+def search_and_replace_joplin_resource_links(text: str, resources_types_dict: dict, resources_names_dict: dict, resource_location: str) -> str:
     """Goes through a block of text and replaces all the internal links with valid syntax. For resources.
 
     Example:
@@ -108,6 +112,7 @@ def search_and_replace_joplin_resource_links(text: str, resources_types_dict: di
         text (str): Text you want to go through
         resrouces_types_dict (dict): Dictionary of all the resource, id pairs
         resource_location (str): Folder name where all resources are stored
+        resource (str): Resource that is being manipulated
 
     Returns:
         str: Text with replaced links.
@@ -116,7 +121,11 @@ def search_and_replace_joplin_resource_links(text: str, resources_types_dict: di
     
     for link_to_replace in internal_links:
         resource_id = re.search("(?<=\(:\/).+?(?=\))", link_to_replace).group()        
-        text = text.replace(link_to_replace, f"(../{resource_location}/{resource_id}.{resources_types_dict[resource_id]})")
+        if resources_types_dict[resource_id] == "":
+            text = text.replace(link_to_replace, f"(./{resource_location}/{resources_names_dict[resource_id]})")
+        else:
+            text = text.replace(link_to_replace, f"(./{resource_location}/{resource_id}.{resources_types_dict[resource_id]})")
+
     
     return text    
 
@@ -157,6 +166,14 @@ def generate_dict_with_all_resources(resources: List) -> dict:
         resources_types_dict[resource['id']] = resource['file_extension']
 
     return resources_types_dict
+
+def generate_dict_with_all_resources_filenames(resources: List) -> dict:
+    resources_names_dict = {}
+
+    for resource in resources:
+        resources_names_dict[resource['id']] = resource['filename']
+
+    return resources_names_dict
 
 def get_folder_title(note: dict, folders_dict: dict) -> str:
     """Get the name of the folder, where note is located

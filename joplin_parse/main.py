@@ -17,7 +17,8 @@ from joplin_parse.utils import (
     get_folder_title,
     download_resource,
     choose_folders_to_parse,
-    generate_note
+    generate_note,
+    generate_dict_with_all_resources_filenames
 )
 
 TOKEN ="dd17a885a394a1c18f66a23a5578cde0200f4177bca0eb7ad8cb1b60a25b402e48942740e59a8522222b918c8d202e9e871e22992d18ad3df8ec6ad6d13e8c7c"
@@ -42,6 +43,7 @@ async def main(options):
     all_notes = (await joplin.get_notes()).json()    
     all_folders = (await joplin.get_folders()).json()
     all_resources = (await joplin.get_resources()).json()
+    notes_folder = 'notes'
     resource_folder = 'resources'
 
     response = input("Do you want to parse all folders? [y/n]")
@@ -54,20 +56,23 @@ async def main(options):
 
     notes_dict = generate_dict_with_all_notes_and_ids(all_notes)
     folders_dict = generate_dict_with_folder_and_ids(all_folders)
-    resrouces_types_dict = generate_dict_with_all_resources(all_resources)
+    
+    resources_types_dict = generate_dict_with_all_resources(all_resources)
+    resources_names_dict = generate_dict_with_all_resources_filenames(all_resources)
+
 
     for resource in all_resources:
-        response = await download_resource(joplin, resource, resource_folder)
+        response = await download_resource(joplin, resource, os.path.join(notes_folder, resource_folder))
 
-    if not os.path.exists('notes'):
-        os.makedirs('notes')
+    if not os.path.exists(notes_folder):
+        os.makedirs(notes_folder)
 
     for note in all_notes:
-        file_path = os.path.join("notes", remove_spaces(note['title']))
+        file_path = os.path.join(notes_folder, remove_spaces(note['title']))
         try:
             note['body'] = search_and_replace_joplin_note_links(note['body'], notes_dict)
         except KeyError:
-            note['body'] = search_and_replace_joplin_resource_links(note['body'], resrouces_types_dict, resource_folder)
+            note['body'] = search_and_replace_joplin_resource_links(note['body'], resources_types_dict, resources_names_dict, resource_folder)
 
         if note['parent_id'] in folders_dict:
             note['category'] = get_folder_title(note, folders_dict)
