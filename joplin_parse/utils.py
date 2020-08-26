@@ -172,3 +172,13 @@ def get_folder_title(note: dict, folders_dict: dict) -> str:
     folder_title = folders_dict[folder_id]
     
     return folder_title
+
+def choose_folders_to_parse(folders):
+    parent_folder_names = get_folder_names(folders)
+    print(parent_folder_names)
+    folder_to_parse = input("Please choose the folder to parse:")
+
+    folder_index = find_position_in_list(parent_folder_names, folder_to_parse)
+    child_folders = folders[folder_index]["children"]
+
+    return child_folders

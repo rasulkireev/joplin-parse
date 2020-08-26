@@ -15,7 +15,8 @@ from joplin_parse.utils import (
     search_and_replace_joplin_resource_links,
     has_children,
     get_folder_title,
-    download_resource
+    download_resource,
+    choose_folders_to_parse
 )
 
 TOKEN ="dd17a885a394a1c18f66a23a5578cde0200f4177bca0eb7ad8cb1b60a25b402e48942740e59a8522222b918c8d202e9e871e22992d18ad3df8ec6ad6d13e8c7c"
@@ -42,6 +43,14 @@ async def main(options):
     all_resources = (await joplin.get_resources()).json()
     resource_folder = 'resources'
 
+    response = input("Do you want to parse all folders? [y/n]")
+    if response == "n":
+        all_folders = choose_folders_to_parse(all_folders)
+    elif response == "y":
+        pass
+    else:
+        print("Incorrect response")
+
     notes_dict = generate_dict_with_all_notes_and_ids(all_notes)
     folders_dict = generate_dict_with_folder_and_ids(all_folders)
     resrouces_types_dict = generate_dict_with_all_resources(all_resources)
@@ -59,8 +68,9 @@ async def main(options):
         except KeyError:
             note_body = search_and_replace_joplin_resource_links(note['body'], resrouces_types_dict, resource_folder)
 
-        with open(f'{file_path}.md','wb') as md_note:
-            s = f"""---
+        if note['parent_id'] in folders_dict:
+            with open(f'{file_path}.md','wb') as md_note:
+                s = f"""---
 title: `{note['title']}`
 category: {get_folder_title(note, folders_dict)}
 id: {note['id']}
@@ -70,7 +80,9 @@ created_at: {note['created_time']}
 
 {note_body}
                 """
-            md_note.write(s.encode("utf-8"))
+                md_note.write(s.encode("utf-8"))
+        else:
+            continue
 
 if __name__ == "__main__":
     cli_options = parse_options()
