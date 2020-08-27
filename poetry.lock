@@ -398,7 +398,7 @@ python-versions = "*"
 version = "3.7.4.3"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Module for decorators, wrappers and monkey patching."
 name = "wrapt"
 optional = false
@@ -419,7 +419,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "1726865f04c52ecb6b45c0905dda22c2c0d2fade4574e4a493d9b5e2b82ab22f"
+content-hash = "7beb95cf293beade906688b11cfd5e2ad3272be28aae27e5aa0a34b37bafae3c"
 python-versions = "^3.7"
 
 [metadata.files]
