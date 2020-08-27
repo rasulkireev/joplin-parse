@@ -18,7 +18,7 @@ jobs:
     - name: Enforce Version Update
       run: |
           echo "Checking if library code has changed..."
-          git diff -s --exit-code 'origin/master' -- market_toolkit pyproject.toml && exit 0
+          git diff -s --exit-code 'origin/master' -- joplin-parse pyproject.toml && exit 0
           echo "Checking if the version has been changed from master..."
           git diff 'origin/master' -- pyproject.toml | grep "+version = "
   
@@ -33,12 +33,12 @@ jobs:
     - name: 'Run linting'
       run: |
         poetry run black --check --diff .
-        poetry run pylint market_toolkit
+        poetry run pylint joplin-parse
 
     - name: 'Grade code on maintainability and complexity'
       run: |
-        poetry run radon cc market_toolkit -s --total-average
-        poetry run radon mi market_toolkit -s
+        poetry run radon cc joplin-parse -s --total-average
+        poetry run radon mi joplin-parse -s
 
   publish:
     name: Publish to PiPy
