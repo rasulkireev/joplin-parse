@@ -142,6 +142,29 @@ def generate_dict_with_all_notes_and_ids(notes):
     return notes_dict
 
 
+# def generate_dict_with_folder_and_ids(folders_object: dict):
+#     folders_dict = {}
+
+#     for folder_object in folders_object:
+#         folders_dict[folder_object["id"]] = folder_object["title"]
+
+#         if folder_object["children"]:
+#             folders = folder_object["children"]
+#             for folder_object in folders_object:
+#                 folders_dict[folder_object["id"]] = folder_object["title"]
+
+#                 if folder_object["children"]:
+#                     folders = folder_object["children"]
+#                     for folder_object in folders_object:
+#                         folders_dict[folder_object["id"]] = folder_object["title"]
+
+#                         if folder_object["children"]:
+#                             folders = folder_object["children"]
+#                             for folder_object in folders_object:
+#                                 folders_dict[folder_object["id"]] = folder_object["title"]
+#     return folders_dict
+
+
 def generate_dict_with_all_resources(resources: List) -> dict:
     resources_types_dict = {}
 

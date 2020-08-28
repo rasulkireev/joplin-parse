@@ -39,6 +39,7 @@ async def main(options):
     all_notes = (await joplin.get_notes()).json()
     all_folders = (await joplin.get_folders()).json()
     all_resources = (await joplin.get_resources()).json()
+
     notes_folder = "notes"
     resource_folder = "resources"
 
@@ -50,8 +51,8 @@ async def main(options):
     else:
         print("Incorrect response")
 
-    notes_dict = generate_dict_with_all_notes_and_ids(all_notes)
     folders_dict = generate_dict_with_folder_and_ids(all_folders)
+    notes_dict = generate_dict_with_all_notes_and_ids(all_notes)
 
     resources_types_dict = generate_dict_with_all_resources(all_resources)
     resources_names_dict = generate_dict_with_all_resources_filenames(all_resources)
