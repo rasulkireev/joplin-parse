@@ -1,19 +1,19 @@
 import os
 import asyncio
 import argparse
+
 from joplin_api import JoplinApi
 from joplin_parse.utils import (
     remove_spaces,
-    generate_dict_with_folder_and_ids,
     generate_dict_with_all_notes_and_ids,
     generate_dict_with_all_resources,
     search_and_replace_joplin_note_links,
     search_and_replace_joplin_resource_links,
-    get_folder_title,
     download_resource,
     choose_folders_to_parse,
     generate_note,
     generate_dict_with_all_resources_filenames,
+    create_folders,
 )
 
 current_dir = os.getcwd()
@@ -36,14 +36,19 @@ def parse_options():
 async def main(options):
     joplin = JoplinApi(token=options.joplin_token)
 
-    all_notes = (await joplin.get_notes()).json()
+    # Get all notes, folders and resources info.
     all_folders = (await joplin.get_folders()).json()
-    all_resources = (await joplin.get_resources()).json()
+    all_notes = (await joplin.get_notes()).json()
+    folder_id_paths = {}
+    note_to_folder_ids_dict = {}
 
+    # Set default locations for generated files
     notes_folder = "notes"
     resource_folder = "resources"
 
-    response = input("Do you want to parse all folders? [y/n]")
+    # Give the user an option to parse all the notebooks or a selection.
+    # Rasul TODO: allow to choose multiple notebooks.
+    response = input("Do you want to parse all notebooks? [y/n]")
     if response == "n":
         all_folders = choose_folders_to_parse(all_folders)
     elif response == "y":
@@ -51,22 +56,41 @@ async def main(options):
     else:
         print("Incorrect response")
 
-    folders_dict = generate_dict_with_folder_and_ids(all_folders)
-    notes_dict = generate_dict_with_all_notes_and_ids(all_notes)
+    # Generate folders for chosen notebooks
+    for folder in all_folders:
+        create_folders(folder, notes_folder, folder_id_paths)
+
+    # Generate a dictionary with notes ids as keys and folder ids as values
+    for k in folder_id_paths:
+        notes = (await joplin.get_folders_notes(k)).json()
+        for note in notes:
+            note_to_folder_ids_dict[note["id"]] = k
+
+    # Create a new list of notes that appear in selected folders only
+    filtered_all_notes = []
+    for note in all_notes:
+        if note["id"] in note_to_folder_ids_dict:
+            filtered_all_notes.append(note)
+
+    # Get a dictionary with note titles and ids
+    notes_dict = generate_dict_with_all_notes_and_ids(filtered_all_notes)
+
+    for note in filtered_all_notes:
+        all_resources = []
+        resources = (await joplin.get_notes_resources(note["id"])).json()
+
+        for resource in resources:
+            all_resources.append(resource)
+            response = await download_resource(
+                joplin, resource, os.path.join(notes_folder, resource_folder)
+            )
 
     resources_types_dict = generate_dict_with_all_resources(all_resources)
     resources_names_dict = generate_dict_with_all_resources_filenames(all_resources)
 
-    for resource in all_resources:
-        response = await download_resource(
-            joplin, resource, os.path.join(notes_folder, resource_folder)
-        )
-
-    if not os.path.exists(notes_folder):
-        os.makedirs(notes_folder)
-
-    for note in all_notes:
-        file_path = os.path.join(notes_folder, remove_spaces(note["title"]))
+    for note in filtered_all_notes:
+        folder_path = folder_id_paths[note_to_folder_ids_dict[note["id"]]]
+        file_path = os.path.join(folder_path, remove_spaces(note["title"]))
         try:
             note["body"] = search_and_replace_joplin_note_links(
                 note["body"], notes_dict
@@ -79,11 +103,8 @@ async def main(options):
                 resource_folder,
             )
 
-        if note["parent_id"] in folders_dict:
-            note["category"] = get_folder_title(note, folders_dict)
-            generate_note(file_path, note)
-        else:
-            continue
+        note["category"] = os.path.basename(os.path.normpath(folder_path))
+        generate_note(file_path, note)
 
 
 if __name__ == "__main__":

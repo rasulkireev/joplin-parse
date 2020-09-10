@@ -142,27 +142,22 @@ def generate_dict_with_all_notes_and_ids(notes):
     return notes_dict
 
 
-# def generate_dict_with_folder_and_ids(folders_object: dict):
-#     folders_dict = {}
+def create_folders(folder, notes_folder, folder_id_paths):
+    path = []
 
-#     for folder_object in folders_object:
-#         folders_dict[folder_object["id"]] = folder_object["title"]
+    def parse_joplin_folders(folder_object):
+        try:
+            for sub_folder in folder_object["children"]:
+                path.append(sub_folder["title"])
+                parse_joplin_folders(sub_folder)
+        except KeyError:
+            new_path = os.path.join(notes_folder, folder["title"], *path)
+            folder_id_paths[folder_object["id"]] = new_path
+            if not os.path.exists(new_path):
+                os.makedirs(new_path)
+            path.clear()
 
-#         if folder_object["children"]:
-#             folders = folder_object["children"]
-#             for folder_object in folders_object:
-#                 folders_dict[folder_object["id"]] = folder_object["title"]
-
-#                 if folder_object["children"]:
-#                     folders = folder_object["children"]
-#                     for folder_object in folders_object:
-#                         folders_dict[folder_object["id"]] = folder_object["title"]
-
-#                         if folder_object["children"]:
-#                             folders = folder_object["children"]
-#                             for folder_object in folders_object:
-#                                 folders_dict[folder_object["id"]] = folder_object["title"]
-#     return folders_dict
+    parse_joplin_folders(folder)
 
 
 def generate_dict_with_all_resources(resources: List) -> dict:

@@ -15,12 +15,12 @@ jobs:
     - name: Setup Python
       uses: actions/setup-python@v2
           
-    - name: Enforce Version Update
-      run: |
-          echo "Checking if library code has changed..."
-          git diff -s --exit-code 'origin/master' -- joplin_parse pyproject.toml && exit 0
-          echo "Checking if the version has been changed from master..."
-          git diff 'origin/master' -- pyproject.toml | grep "+version = "
+    # - name: Enforce Version Update
+    #   run: |
+    #       echo "Checking if library code has changed..."
+    #       git diff -s --exit-code 'origin/master' -- joplin_parse pyproject.toml && exit 0
+    #       echo "Checking if the version has been changed from master..."
+    #       git diff 'origin/master' -- pyproject.toml | grep "+version = "
   
     - name: Build dependencies
       run: |
