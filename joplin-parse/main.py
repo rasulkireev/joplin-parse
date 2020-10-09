@@ -4,7 +4,7 @@ import json
 import asyncio
 from joplin_api import JoplinApi
 
-TOKEN ="12111fcd285e8c197adb2c43946309de3ec288b4cf993d48c8acae3f90294a12cb336056c57f6b08d00f2fe17f669e86715cc8c92be3c145075bcd56e814fd48"
+TOKEN ="5ba2569164f8f0fdae8cfca2552094e994099b8868e2c1a70211b4748cff006dafc92f73f0822425a0df537969554bfc8a72496f6a08042c56272abc2f508f03"
 joplin = JoplinApi(token=TOKEN)
 current_dir = os.getcwd()
 
