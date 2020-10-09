@@ -1,7 +1,7 @@
-jupyter-test/
+output/
+notes/
 resources/
-reading Joplin.ipynb
-
+notebooks/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
