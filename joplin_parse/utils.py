@@ -34,7 +34,17 @@ def find_position_in_list(parsed_list, item_in_search):
     return parsed_list.index(item_in_search)
 
 
-def search_for_joplin_links(text):
+def search_for_joplin_links(text: str) -> List[str]:
+    """Looks for Joplin Style Links.
+
+    For example, [Sample Note](:/54211d44226e483c98eae69cc71a0dd4)
+
+    Args:
+        text (str): Content of a note
+
+    Returns:
+        list[str]: All Joplin links
+    """
     internal_links = re.findall(r"\(:/.+\)", text)
 
     link_ids = []
